@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+
+podman run --rm -it -v "$(pwd):/workdir" --workdir "/workdir" \
+    localhost/vimconfig:latest

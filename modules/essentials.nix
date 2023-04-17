@@ -1,9 +1,6 @@
 { pkgs, dsl, ... }:
-with dsl;
-let
-  cmd = command: desc: [ "<cmd>${command}<cr>" desc ];
-in
-{
+let cmd = command: desc: [ "<cmd>${command}<cr>" desc ];
+in {
   plugins = with pkgs; [
     # command discover
     which-key
@@ -84,32 +81,27 @@ in
       i = cmd "lua vim.lsp.buf.implementation()" "Jump to Implementation";
       s = cmd "lua vim.lsp.buf.signature_help()" "Get function signature";
 
-      "k" = [ "<cmd>lua vim.lsp.buf.type_definition()<CR>" "Get type definition" ];
+      "k" =
+        [ "<cmd>lua vim.lsp.buf.type_definition()<CR>" "Get type definition" ];
       "rn" = [ "<cmd>lua vim.lsp.buf.rename()<CR>" "Rename function/variable" ];
       "ca" = [ "<cmd>lua vim.lsp.buf.code_action()<CR>" "Perform code action" ];
       "r" = [
         "<cmd>lua vim.lsp.buf.references()<CR>"
         "Get function/variable refs"
       ];
-      "e" = [
-        "<cmd>lua vim.diagnostic.open_float()<CR>"
-        "Get lsp errors"
-      ];
-      "dn" = [
-        "<cmd>lua vim.diagnostic.goto_next()<CR>"
-        "next diag"
-      ];
-      "dp" = [
-        "<cmd>lua vim.diagnostic.goto_prev()<CR>"
-        "prev diag"
-      ];
+      "e" = [ "<cmd>lua vim.diagnostic.open_float()<CR>" "Get lsp errors" ];
+      "dn" = [ "<cmd>lua vim.diagnostic.goto_next()<CR>" "next diag" ];
+      "dp" = [ "<cmd>lua vim.diagnostic.goto_prev()<CR>" "prev diag" ];
       "mb" = [ ":VimtexCompile<CR>" "build latex buffer" ];
       "f" = [ "<cmd>lua vim.lsp.buf.formatting()<CR>" "Format buffer" ];
       "bb" = [ "<cmd>Telescope buffers<cr>" "Get buffer list" ];
       "fb" = [ "<cmd>Telescope file_browser<cr>" "Get buffer list" ];
       "gg" = [ "<cmd>Telescope live_grep<cr>" "Fzf fuzzy search" ];
       "['<leader>']" = [ "<cmd>Telescope find_files<cr>" "search files" ];
-      "n"  = ["<cmd>lua require(\"sg.telescope\").fuzzy_search_results()<CR>" "sourcegraph search"];
+      "n" = [
+        ''<cmd>lua require("sg.telescope").fuzzy_search_results()<CR>''
+        "sourcegraph search"
+      ];
 
       "ws" = [ "<cmd>sp<cr>" "Split window horizontally" ];
       "wv" = [ "<cmd>vs<cr>" "Split window vertically" ];
@@ -160,9 +152,7 @@ in
       "cU" = [ "lua require('crates').upgrade_crate()" "upgrade a crate" ];
       "cUa" =
         [ "lua require('crates').upgrade_all_crates()" "upgrade all crates" ];
-      "gi" =
-        [ "<cmd>GuessIndent<CR>" "guess indent again" ];
-
+      "gi" = [ "<cmd>GuessIndent<CR>" "guess indent again" ];
 
       # adga specific things
       "ad" = [ "<cmd>CornelisGoToDefinition<CR>" "Goto agda defn" ];
@@ -176,65 +166,142 @@ in
       "amc" = [ "<cmd>CornelisMakeCase<CR>" "Make case" ];
 
       # trouble keybinds
-      "xx" = [ "<cmd>TroubleToggle<CR>" "Toggle trouble diagnostics" ] ;
-      "xw" = [ "<cmd>TroubleToggle workspace_diagnostics<CR>" "Toggle trouble workspace diagnostics" ];
-      "xd" = [ "<cmd>TroubleToggle document_diagnostics<CR>" "Toggle trouble document diagnostics" ];
-      "xq" = [ "<cmd>TroubleToggle quickfix<CR>" "Toggle trouble quickfix list"];
+      "xx" = [ "<cmd>TroubleToggle<CR>" "Toggle trouble diagnostics" ];
+      "xw" = [
+        "<cmd>TroubleToggle workspace_diagnostics<CR>"
+        "Toggle trouble workspace diagnostics"
+      ];
+      "xd" = [
+        "<cmd>TroubleToggle document_diagnostics<CR>"
+        "Toggle trouble document diagnostics"
+      ];
+      "xq" =
+        [ "<cmd>TroubleToggle quickfix<CR>" "Toggle trouble quickfix list" ];
       "xl" = [ "<cmd>TroubleToggle loclist<CR>" "Toggle trouble local list" ];
-      "xr" = [ "<cmd>TroubleToggle lsp_references<CR>" "Toggle trouble lsp references" ];
-      "xn" = [ "cmd lua require(\"trouble\").next({skip_groups = true, jump = true})<CR>" "Jump next diagnostic"];
-      "xp" = [ "cmd lua require(\"trouble\").previous({skip_groups = true, jump = true})<CR>" "Jump next diagnostic"];
+      "xr" = [
+        "<cmd>TroubleToggle lsp_references<CR>"
+        "Toggle trouble lsp references"
+      ];
+      "xn" = [
+        ''
+          cmd lua require("trouble").next({skip_groups = true, jump = true})<CR>''
+        "Jump next diagnostic"
+      ];
+      "xp" = [
+        ''
+          cmd lua require("trouble").previous({skip_groups = true, jump = true})<CR>''
+        "Jump next diagnostic"
+      ];
 
       # dap shit
       "pc" = [ "<Cmd>lua require'dap'.continue()<CR>" "Dap Continue" ];
       "po" = [ "<Cmd>lua require'dap'.step_over()<CR>" "Dap Step over" ];
       "pi" = [ "<Cmd>lua require'dap'.step_into()<CR>" "Dap Step into" ];
       "pO" = [ "<Cmd>lua require'dap'.step_out()<CR>" "Dap Step out" ];
-      "pb" = [ "<Cmd>lua require'dap'.toggle_breakpoint()<CR>" "Dap Toggle breakpoint" ];
+      "pb" = [
+        "<Cmd>lua require'dap'.toggle_breakpoint()<CR>"
+        "Dap Toggle breakpoint"
+      ];
       "pr" = [ "<Cmd>lua require'dap'.repl.open()<CR>" "Dap Open repl" ];
       "pl" = [ "<Cmd>lua require'dap'.run_last()<CR>" "Dap Run last" ];
       "pu" = [ "<Cmd>lua require'dapui'.toggle()<CR>" "Dap UI Toggle" ];
-      "pC" = [ "<Cmd>lua require'telescope'.extensions.dap.commands{}<CR>" "Dap commands" ];
-      "pa" = [ "<Cmd>lua require'telescope'.extensions.dap.configurations{}<CR>" "Dap configurations" ];
-      "pL" = [ "<Cmd>lua require'telescope'.extensions.dap.list_breakpoints{}<CR>" "Dap list breakpoints" ];
-      "pv" = [ "<Cmd>lua require'telescope'.extensions.dap.variables{}<CR>" "Dap list variables" ];
-      "pf" = [ "<Cmd>lua require'telescope'.extensions.dap.frames{}<CR>" "Dap list frames" ];
-      "pe" = [ "<Cmd>lua require('dapui').eval(vim.fn.input('Expression to evaluate: '))<CR>" "Dap eval expression" ];
-      "ps" = [ "<Cmd>lua require('dap.ext.vscode').load_launchjs(nil, { [\"lldb\"] = {\"rust\"} })<CR>" "Dap load configs" ];
+      "pC" = [
+        "<Cmd>lua require'telescope'.extensions.dap.commands{}<CR>"
+        "Dap commands"
+      ];
+      "pa" = [
+        "<Cmd>lua require'telescope'.extensions.dap.configurations{}<CR>"
+        "Dap configurations"
+      ];
+      "pL" = [
+        "<Cmd>lua require'telescope'.extensions.dap.list_breakpoints{}<CR>"
+        "Dap list breakpoints"
+      ];
+      "pv" = [
+        "<Cmd>lua require'telescope'.extensions.dap.variables{}<CR>"
+        "Dap list variables"
+      ];
+      "pf" = [
+        "<Cmd>lua require'telescope'.extensions.dap.frames{}<CR>"
+        "Dap list frames"
+      ];
+      "pe" = [
+        "<Cmd>lua require('dapui').eval(vim.fn.input('Expression to evaluate: '))<CR>"
+        "Dap eval expression"
+      ];
+      "ps" = [
+        ''
+          <Cmd>lua require('dap.ext.vscode').load_launchjs(nil, { ["lldb"] = {"rust"} })<CR>''
+        "Dap load configs"
+      ];
 
+      "na" = [
+        ''<Cmd>lua require("ts-node-action").node_action{}<CR>''
+        "Trigger Node Action"
+      ];
 
-
-      "na" = [ "<Cmd>lua require(\"ts-node-action\").node_action{}<CR>" "Trigger Node Action"];
-
-
-      "tm" = [ "<Cmd>lua require(\"trailblazer\").new_trail_mark()<CR>" "Trailblazer: new trail mark"];
-      "tb" = [ "<Cmd>lua require(\"trailblazer\").track_back()<CR>" "Trailblazer: track back (deletes mark)"];
-      "tn" = [ "<Cmd>lua require(\"trailblazer\").peek_move_next_down()<CR>" "Trailblazer: next down"];
-      "tp" = [ "<Cmd>lua require(\"trailblazer\").peek_move_previous_up()<CR>" "Trailblazer: previous up"];
-      "tj" = [ "<Cmd>lua require(\"trailblazer\").move_to_nearest()<CR>" "Trailblazer: jump to nearest"];
-      "tl" = [ "<Cmd>lua require(\"trailblazer\").toggle_trail_mark_list()<CR>" "Trailblazer: list"];
-      "tD" = [ "<Cmd>lua require(\"trailblazer\").delete_all_trail_marks()<CR>" "Trailblazer: nuke all trail marks"];
-      "tq" = [ "<Cmd>lua require(\"trailblazer\").paste_at_last_trail_mark()<CR>" "Trailblazer: paste at last trail mark"];
-      "tQ" = [ "<Cmd>lua require(\"trailblazer\").paste_at_all_trail_marks()<CR>" "Trailblazer: paste at all trail marks"];
-      "ts" = [ "<Cmd>lua require(\"trailblazer\").switch_to_next_trail_mark_stack()<CR>" "Trailblazer: next mark stack"];
-      "tS" = [ "<Cmd>lua require(\"trailblazer\").switch_to_previous_trail_mark_stack()<CR>" "Trailblazer: previous mark stack"];
-      "to" = [ "<Cmd>lua require(\"trailblazer\").set_trail_mark_stack_sort_mode()<CR>" "Trailblazer: sort mode"];
-      "ti" = [ "<Cmd>lua require(\"trailblazer\").set_trail_mark_select_mode()<CR>" "Trailblazer: select mode"];
-      "tz" = [ "<Cmd>TrailBlazerSaveSession<CR>" "Trailblazer: save"];
-      "tZ" = [ "<Cmd>TrailBlazerLoadSession<CR>" "Trailblazer: load"];
+      "tm" = [
+        ''<Cmd>lua require("trailblazer").new_trail_mark()<CR>''
+        "Trailblazer: new trail mark"
+      ];
+      "tb" = [
+        ''<Cmd>lua require("trailblazer").track_back()<CR>''
+        "Trailblazer: track back (deletes mark)"
+      ];
+      "tn" = [
+        ''<Cmd>lua require("trailblazer").peek_move_next_down()<CR>''
+        "Trailblazer: next down"
+      ];
+      "tp" = [
+        ''<Cmd>lua require("trailblazer").peek_move_previous_up()<CR>''
+        "Trailblazer: previous up"
+      ];
+      "tj" = [
+        ''<Cmd>lua require("trailblazer").move_to_nearest()<CR>''
+        "Trailblazer: jump to nearest"
+      ];
+      "tl" = [
+        ''<Cmd>lua require("trailblazer").toggle_trail_mark_list()<CR>''
+        "Trailblazer: list"
+      ];
+      "tD" = [
+        ''<Cmd>lua require("trailblazer").delete_all_trail_marks()<CR>''
+        "Trailblazer: nuke all trail marks"
+      ];
+      "tq" = [
+        ''<Cmd>lua require("trailblazer").paste_at_last_trail_mark()<CR>''
+        "Trailblazer: paste at last trail mark"
+      ];
+      "tQ" = [
+        ''<Cmd>lua require("trailblazer").paste_at_all_trail_marks()<CR>''
+        "Trailblazer: paste at all trail marks"
+      ];
+      "ts" = [
+        ''
+          <Cmd>lua require("trailblazer").switch_to_next_trail_mark_stack()<CR>''
+        "Trailblazer: next mark stack"
+      ];
+      "tS" = [
+        ''
+          <Cmd>lua require("trailblazer").switch_to_previous_trail_mark_stack()<CR>''
+        "Trailblazer: previous mark stack"
+      ];
+      "to" = [
+        ''<Cmd>lua require("trailblazer").set_trail_mark_stack_sort_mode()<CR>''
+        "Trailblazer: sort mode"
+      ];
+      "ti" = [
+        ''<Cmd>lua require("trailblazer").set_trail_mark_select_mode()<CR>''
+        "Trailblazer: select mode"
+      ];
+      "tz" = [ "<Cmd>TrailBlazerSaveSession<CR>" "Trailblazer: save" ];
+      "tZ" = [ "<Cmd>TrailBlazerLoadSession<CR>" "Trailblazer: load" ];
 
     };
   };
-  use.which-key.setup = callWith { };
+  use.which-key.setup = dsl.callWith { };
 
-
-
-
-  use.guess-indent.setup = callWith { };
-
-
-
-
+  use.guess-indent.setup = dsl.callWith { };
 
   # yoinked from gytis
   vimscript = ''

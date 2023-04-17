@@ -3,13 +3,12 @@
 
   # Input source for our derivation
   inputs = {
-    nixpkgs.url = "github:GaetanLepage/nixpkgs?rev=09f49769746a9ba87ea3985402615e0f90dc7ffb";
+    nixpkgs.url =
+      "github:GaetanLepage/nixpkgs?rev=09f49769746a9ba87ea3985402615e0f90dc7ffb";
     flake-utils.url = "github:numtide/flake-utils";
     cornelis.url = "github:isovector/cornelis";
 
-    lldb-nix-fix = {
-      url = "github:mstone/nixpkgs/darwin-fix-vscode-lldb";
-    };
+    lldb-nix-fix = { url = "github:mstone/nixpkgs/darwin-fix-vscode-lldb"; };
 
     vim-illuminate-src = {
       url = "github:RRethy/vim-illuminate";
@@ -26,9 +25,7 @@
       flake = false;
     };
 
-    nil = {
-      url = "github:oxalica/nil";
-    };
+    nil = { url = "github:oxalica/nil"; };
 
     nix2vim = {
       url = "github:gytis-ivaskevicius/nix2vim";
@@ -95,7 +92,8 @@
       flake = false;
     };
     which-key-src = {
-      url = "github:folke/which-key.nvim?ref=bd4411a2ed4dd8bb69c125e339d837028a6eea71";
+      url =
+        "github:folke/which-key.nvim?ref=bd4411a2ed4dd8bb69c125e339d837028a6eea71";
       flake = false;
     };
     conceal-src = {
@@ -229,7 +227,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-
     floating-input-src = {
       url = "github:liangxianzhe/floating-input.nvim";
       flake = false;
@@ -267,7 +264,8 @@
 
   };
 
-  outputs = inputs@{ self, flake-utils, nixpkgs, nix2vim, coq-lsp, neovim, sg-nvim-src, ... }:
+  outputs = inputs@{ self, flake-utils, nixpkgs, nix2vim, coq-lsp, neovim
+    , sg-nvim-src, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -275,48 +273,51 @@
           overlays = [
             (import ./plugins.nix inputs)
             nix2vim.overlay
-            (prev: final:
-              {
-                coq-lsp = coq-lsp.packages.${system}.default;
-                nvim = neovim.packages.${system}.neovim;
-                sg = sg-nvim-src.packages.${prev.system}.default.overrideAttrs (oldAttrs: {
-                    buildInputs = oldAttrs.buildInputs ++ (if prev.stdenv.isDarwin then [ prev.darwin.apple_sdk.frameworks.Security ] else []);
-                    });
-              }
-            )
+            (prev: final: {
+              coq-lsp = coq-lsp.packages.${system}.default;
+              nvim = neovim.packages.${system}.neovim;
+              sg = sg-nvim-src.packages.${prev.system}.default.overrideAttrs
+                (oldAttrs: {
+                  buildInputs = oldAttrs.buildInputs
+                    ++ (if prev.stdenv.isDarwin then
+                      [ prev.darwin.apple_sdk.frameworks.Security ]
+                    else
+                      [ ]);
+                });
+            })
           ];
         };
         neovimConfig = pkgs.neovimBuilder {
-        #  # Build with NodeJS
+          #  # Build with NodeJS
           withNodeJs = true;
           withPython3 = true;
-          package = neovim.packages.${system}.neovim.overrideAttrs (oldAttrs:
-	  {
-	    propagatedBuildInputs = [ pkgs.sg ];
-	  }
+          package = neovim.packages.${system}.neovim.overrideAttrs
+            (oldAttrs: { propagatedBuildInputs = [ pkgs.sg ]; }
 
-	  );
-	  extraMakeWrapperArgs = ''
-	      --suffix PATH : ${pkgs.lib.makeBinPath [ pkgs.sg ]} --suffix LUA_CPATH : ';${pkgs.sg}/lib/libsg_nvim.dylib;${pkgs.sg}/lib/libsg_nvim.so;'
-	  '';
+            );
+          extraMakeWrapperArgs = let sgBin = pkgs.lib.makeBinPath [ pkgs.sg ];
+          in pkgs.lib.concatStringsSep " " [
+            "--suffix PATH : ${sgBin}"
+            "--suffix LUA_CPATH : ';${pkgs.sg}/lib/libsg_nvim.dylib;${pkgs.sg}/lib/libsg_nvim.so;'"
+            "--set HOME ''"
+          ];
           # extraMakeWrapperArgs = ''
           #       --set PATH '${pkgs.lib.makeBinPath (with pkgs; [ sg ripgrep fd curl git nix ])}:$PATH' /* --set LD_LIBRARY_PATH '${pkgs.sg}/lib/:$LD_LIBRARY_PATH' */
           #       '';
           imports = [
             ./modules/essentials.nix
-            ./modules/lsp.nix
-            ./modules/aesthetics.nix
-            ./modules/telescope.nix
+            # ./modules/lsp.nix
+            # ./modules/aesthetics.nix
+            # ./modules/telescope.nix
             ./modules/misc.nix
-            ./modules/treesitter.nix
-            ./modules/git.nix
-            ./modules/wilder.nix
+            # ./modules/treesitter.nix
+            # ./modules/git.nix
+            # ./modules/wilder.nix
 
-
-            ./modules/agda.nix
-            ./modules/autopairs.nix
-            ./modules/trailblazer.nix
-            ./modules/sg.nix
+            # ./modules/agda.nix
+            # ./modules/autopairs.nix
+            # ./modules/trailblazer.nix
+            # ./modules/sg.nix
 
             # ./modules/leap.nix
             # TODO uncomment when
@@ -325,15 +326,30 @@
             # ./modules/repl.nix
           ];
         };
-      in
-      {
-        # The package built by `nix build .`
-        defaultPackage = neovimConfig;
-        # The app run by `nix run .`
-        apps.defaultApp = {
-          type = "app";
-          program = "${neovimConfig}/bin/nvim";
+        imageConfig = {
+          name = "vimconfig";
+          tag = "latest";
+          config.Cmd = let vimconfig = self.packages."${system}".default;
+          in [ "${vimconfig}/bin/nvim" ];
+          # contents = [ fractopo ];
         };
-        packages.sg = pkgs.sg;
+        vimconfigImage = pkgs.dockerTools.buildImage imageConfig;
+
+      in {
+        # The package built by `nix build .`
+        packages.myNeovim = neovimConfig;
+        packages.myNeovimDocker = vimconfigImage;
+        packages.default = self.packages."${system}".myNeovim;
+        apps.myNeovim = {
+          type = "app";
+          program = "${self.packages.x86_64-linux.default}/bin/nvim";
+        };
+        apps.default = self.apps.x86_64-linux.myNeovim;
+        # The app run by `nix run .`
+        # apps.defaultApp = {
+        #   type = "app";
+        #   program = "${neovimConfig}/bin/nvim";
+        # };
+        # packages.sg = pkgs.sg;
       });
 }
